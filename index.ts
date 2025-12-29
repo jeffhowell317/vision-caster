@@ -62,45 +62,47 @@ app.get('/test-callback', (req: Request, res: Response) => {
 
 app.get('/api/auth/callback', async (req: Request, res: Response) => {
   try {
-    const { code } = req.query;
-    console.log('Callback received with code:', code ? 'yes' : 'no');
+    let code = req.query.code as string;
+    console.log('Callback received. Query params:', JSON.stringify(req.query));
+    console.log('Full URL:', req.originalUrl);
     
     if (!code) {
-      console.error('No code in callback');
-      return res.redirect('/?error=no_code');
+      console.error('No code found in callback');
+      return res.redirect('/?error=no_code_in_callback');
     }
     
-    const { data, error } = await supabase.auth.exchangeCodeForSession(code as string);
-    console.log('Code exchange result:', error ? `Error: ${error.message}` : 'Success');
+    console.log('Attempting to exchange code:', code.substring(0, 20) + '...');
+    const { data, error } = await supabase.auth.exchangeCodeForSession(code);
     
     if (error) {
-      console.error('Code exchange failed:', error);
+      console.error('Code exchange failed:', error.message);
       return res.redirect('/?error=' + encodeURIComponent(error.message));
     }
     
-    if (data.session) {
-      // Set session token in cookie for client
-      res.cookie('sb-auth-token', data.session.access_token, {
-        httpOnly: false,
-        secure: true,
-        sameSite: 'lax',
-        maxAge: 60 * 60 * 24 * 365
-      });
-      res.cookie('sb-refresh-token', data.session.refresh_token, {
-        httpOnly: true,
-        secure: true,
-        sameSite: 'lax',
-        maxAge: 60 * 60 * 24 * 365
-      });
-      console.log('Session created successfully');
-      return res.redirect('/capture.html');
-    } else {
-      console.error('No session returned');
-      return res.redirect('/?error=no_session');
+    if (!data.session) {
+      console.error('No session returned after code exchange');
+      return res.redirect('/?error=no_session_returned');
     }
+    
+    // Set session token in cookie for client
+    res.cookie('sb-auth-token', data.session.access_token, {
+      httpOnly: false,
+      secure: true,
+      sameSite: 'lax',
+      maxAge: 60 * 60 * 24 * 365
+    });
+    res.cookie('sb-refresh-token', data.session.refresh_token, {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'lax',
+      maxAge: 60 * 60 * 24 * 365
+    });
+    
+    console.log('Authentication successful, redirecting to capture');
+    return res.redirect('/capture.html');
   } catch (error: any) {
     console.error('Callback error:', error);
-    res.redirect('/?error=' + encodeURIComponent(error.message));
+    return res.redirect('/?error=' + encodeURIComponent(error.message));
   }
 });
 
