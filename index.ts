@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { Request, Response } from 'express';
 import { createClient } from '@supabase/supabase-js';
 
 const app = express();
@@ -18,7 +18,7 @@ if (!supabaseUrl || !supabaseAnonKey) {
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 // Auth endpoints
-app.post('/api/auth/login', async (req, res) => {
+app.post('/api/auth/login', async (req: Request, res: Response) => {
   try {
     const { email } = req.body;
     const { error } = await supabase.auth.signInWithOtp({
@@ -35,7 +35,7 @@ app.post('/api/auth/login', async (req, res) => {
   }
 });
 
-app.get('/api/auth/callback', async (req, res) => {
+app.get('/api/auth/callback', async (req: Request, res: Response) => {
   try {
     const { code } = req.query;
     if (code) {
@@ -48,7 +48,7 @@ app.get('/api/auth/callback', async (req, res) => {
   }
 });
 
-app.get('/api/auth/me', async (req, res) => {
+app.get('/api/auth/me', async (req: Request, res: Response) => {
   try {
     const token = req.headers.authorization?.split(' ')[1];
     if (!token) {
@@ -66,13 +66,13 @@ app.get('/api/auth/me', async (req, res) => {
   }
 });
 
-app.post('/api/auth/logout', (req, res) => {
+app.post('/api/auth/logout', (req: Request, res: Response) => {
   res.clearCookie('auth');
   res.json({ success: true });
 });
 
 // Captures endpoints
-app.post('/api/captures', async (req, res) => {
+app.post('/api/captures', async (req: Request, res: Response) => {
   try {
     const { content } = req.body;
     const token = req.headers.authorization?.split(' ')[1];
@@ -102,7 +102,7 @@ app.post('/api/captures', async (req, res) => {
   }
 });
 
-app.get('/api/captures', async (req, res) => {
+app.get('/api/captures', async (req: Request, res: Response) => {
   try {
     const token = req.headers.authorization?.split(' ')[1];
 
@@ -130,7 +130,7 @@ app.get('/api/captures', async (req, res) => {
 });
 
 // Serve login page as root
-app.get('/', (req, res) => {
+app.get('/', (req: Request, res: Response) => {
   res.sendFile(process.cwd() + '/public/login.html');
 });
 
