@@ -39,8 +39,23 @@ app.get('/api/auth/callback', async (req: Request, res: Response) => {
   try {
     const { code } = req.query;
     if (code) {
-      const { error } = await supabase.auth.exchangeCodeForSession(code as string);
+      const { data, error } = await supabase.auth.exchangeCodeForSession(code as string);
       if (error) throw error;
+      if (data.session) {
+        // Set session token in cookie for client
+        res.cookie('sb-auth-token', data.session.access_token, {
+          httpOnly: false,
+          secure: true,
+          sameSite: 'lax',
+          maxAge: 60 * 60 * 24 * 365
+        });
+        res.cookie('sb-refresh-token', data.session.refresh_token, {
+          httpOnly: true,
+          secure: true,
+          sameSite: 'lax',
+          maxAge: 60 * 60 * 24 * 365
+        });
+      }
     }
     res.redirect('/capture.html');
   } catch (error: any) {
