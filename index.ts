@@ -21,18 +21,32 @@ const supabase = createClient(supabaseUrl, supabaseAnonKey);
 app.post('/api/auth/login', async (req: Request, res: Response) => {
   try {
     const { email } = req.body;
+    const callbackUrl = `${getBaseUrl()}/api/auth/callback`;
+    console.log('Sending magic link with callback URL:', callbackUrl);
+    
     const { error } = await supabase.auth.signInWithOtp({
       email,
       options: {
-        emailRedirectTo: `${getBaseUrl()}/api/auth/callback`
+        emailRedirectTo: callbackUrl
       }
     });
 
     if (error) throw error;
-    res.json({ success: true });
+    res.json({ success: true, callbackUrl });
   } catch (error: any) {
     res.status(400).json({ error: error.message });
   }
+});
+
+app.get('/api/auth/debug', (req: Request, res: Response) => {
+  const callbackUrl = `${getBaseUrl()}/api/auth/callback`;
+  res.json({ 
+    callbackUrl,
+    instructions: `Add this URL to your Supabase project:
+1. Go to your Supabase dashboard
+2. Navigate to Authentication > URL Configuration
+3. Add this to "Redirect URLs": ${callbackUrl}`
+  });
 });
 
 app.get('/api/auth/callback', async (req: Request, res: Response) => {

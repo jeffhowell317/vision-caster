@@ -90,11 +90,29 @@
       <button type="submit">Send Magic Link</button>
     </form>
     <div id="message" class="message"></div>
+    <div id="debug" style="margin-top: 2rem; padding: 1rem; background: #f0f0f0; border-radius: 4px; font-size: 0.85rem; display: none;">
+      <p style="margin: 0 0 0.5rem 0; font-weight: 600;">Debug Info - Callback URL:</p>
+      <code id="debugUrl" style="word-break: break-all;"></code>
+      <p style="margin: 0.5rem 0 0 0; color: #666; font-size: 0.8rem;">Add this to your Supabase project's Redirect URLs in Authentication > URL Configuration</p>
+    </div>
   </div>
 
   <script>
     const form = document.getElementById('loginForm');
     const messageEl = document.getElementById('message');
+    const debugEl = document.getElementById('debug');
+    const debugUrl = document.getElementById('debugUrl');
+
+    async function loadDebugInfo() {
+      try {
+        const response = await fetch('/api/auth/debug');
+        const data = await response.json();
+        debugUrl.textContent = data.callbackUrl;
+        debugEl.style.display = 'block';
+      } catch (error) {
+        console.error('Failed to load debug info:', error);
+      }
+    }
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -123,6 +141,8 @@
         messageEl.style.display = 'block';
       }
     });
+
+    loadDebugInfo();
   </script>
 </body>
 </html>
