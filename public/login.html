@@ -92,8 +92,10 @@
     <div id="message" class="message"></div>
     <div id="debug" style="margin-top: 2rem; padding: 1rem; background: #f0f0f0; border-radius: 4px; font-size: 0.85rem; display: none;">
       <p style="margin: 0 0 0.5rem 0; font-weight: 600;">Debug Info - Callback URL:</p>
-      <code id="debugUrl" style="word-break: break-all;"></code>
-      <p style="margin: 0.5rem 0 0 0; color: #666; font-size: 0.8rem;">Add this to your Supabase project's Redirect URLs in Authentication > URL Configuration</p>
+      <code id="debugUrl" style="word-break: break-all; display: block; margin-bottom: 1rem;"></code>
+      <p style="margin: 0 0 0.5rem 0; color: #666; font-size: 0.8rem;">Add this EXACTLY to your Supabase project's Redirect URLs in Authentication > URL Configuration</p>
+      <button onclick="testRedirect()" style="padding: 0.5rem 1rem; background: #6c757d; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.85rem;">Test Redirect URL</button>
+      <p id="testResult" style="margin: 0.5rem 0 0 0; color: #666; font-size: 0.8rem;"></p>
     </div>
   </div>
 
@@ -141,6 +143,19 @@
         messageEl.style.display = 'block';
       }
     });
+
+    async function testRedirect() {
+      const testResult = document.getElementById('testResult');
+      try {
+        const response = await fetch('/test-callback?test=true');
+        const data = await response.json();
+        testResult.textContent = '✓ Redirect endpoint is working. Make sure you added the callback URL to Supabase.';
+        testResult.style.color = '#0f6d3b';
+      } catch (error) {
+        testResult.textContent = '✗ Test failed: ' + error.message;
+        testResult.style.color = '#721c24';
+      }
+    }
 
     // Check for error from callback
     const urlParams = new URLSearchParams(window.location.search);
