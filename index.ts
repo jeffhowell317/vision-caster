@@ -52,28 +52,44 @@ app.get('/api/auth/debug', (req: Request, res: Response) => {
 app.get('/api/auth/callback', async (req: Request, res: Response) => {
   try {
     const { code } = req.query;
-    if (code) {
-      const { data, error } = await supabase.auth.exchangeCodeForSession(code as string);
-      if (error) throw error;
-      if (data.session) {
-        // Set session token in cookie for client
-        res.cookie('sb-auth-token', data.session.access_token, {
-          httpOnly: false,
-          secure: true,
-          sameSite: 'lax',
-          maxAge: 60 * 60 * 24 * 365
-        });
-        res.cookie('sb-refresh-token', data.session.refresh_token, {
-          httpOnly: true,
-          secure: true,
-          sameSite: 'lax',
-          maxAge: 60 * 60 * 24 * 365
-        });
-      }
+    console.log('Callback received with code:', code ? 'yes' : 'no');
+    
+    if (!code) {
+      console.error('No code in callback');
+      return res.redirect('/?error=no_code');
     }
-    res.redirect('/capture.html');
+    
+    const { data, error } = await supabase.auth.exchangeCodeForSession(code as string);
+    console.log('Code exchange result:', error ? `Error: ${error.message}` : 'Success');
+    
+    if (error) {
+      console.error('Code exchange failed:', error);
+      return res.redirect('/?error=' + encodeURIComponent(error.message));
+    }
+    
+    if (data.session) {
+      // Set session token in cookie for client
+      res.cookie('sb-auth-token', data.session.access_token, {
+        httpOnly: false,
+        secure: true,
+        sameSite: 'lax',
+        maxAge: 60 * 60 * 24 * 365
+      });
+      res.cookie('sb-refresh-token', data.session.refresh_token, {
+        httpOnly: true,
+        secure: true,
+        sameSite: 'lax',
+        maxAge: 60 * 60 * 24 * 365
+      });
+      console.log('Session created successfully');
+      return res.redirect('/capture.html');
+    } else {
+      console.error('No session returned');
+      return res.redirect('/?error=no_session');
+    }
   } catch (error: any) {
-    res.status(400).send('Authentication failed');
+    console.error('Callback error:', error);
+    res.redirect('/?error=' + encodeURIComponent(error.message));
   }
 });
 

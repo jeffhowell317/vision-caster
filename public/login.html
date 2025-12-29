@@ -142,6 +142,17 @@
       }
     });
 
+    // Check for error from callback
+    const urlParams = new URLSearchParams(window.location.search);
+    const error = urlParams.get('error');
+    if (error) {
+      messageEl.className = 'message error';
+      messageEl.textContent = 'Authentication failed: ' + decodeURIComponent(error);
+      messageEl.style.display = 'block';
+      // Clean up URL
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+
     loadDebugInfo();
   </script>
 </body>
