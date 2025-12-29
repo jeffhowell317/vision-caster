@@ -42,10 +42,21 @@ app.get('/api/auth/debug', (req: Request, res: Response) => {
   const callbackUrl = `${getBaseUrl()}/api/auth/callback`;
   res.json({ 
     callbackUrl,
+    supabaseUrl,
     instructions: `Add this URL to your Supabase project:
 1. Go to your Supabase dashboard
 2. Navigate to Authentication > URL Configuration
-3. Add this to "Redirect URLs": ${callbackUrl}`
+3. Add this to "Redirect URLs": ${callbackUrl}
+4. Make sure it matches EXACTLY (including https://)
+5. Click Save`
+  });
+});
+
+app.get('/test-callback', (req: Request, res: Response) => {
+  res.json({ 
+    allParams: req.query,
+    hasCode: !!req.query.code,
+    code: req.query.code || 'MISSING'
   });
 });
 
