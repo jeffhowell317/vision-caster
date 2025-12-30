@@ -10,6 +10,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@supabase/auth-helpers-nextjs": "^0.15.0",
+    "@supabase/ssr": "^0.8.0",
     "@supabase/supabase-js": "^2.89.0",
     "@types/express": "^5.0.6",
     "express": "^5.2.1",

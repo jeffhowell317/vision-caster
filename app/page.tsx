@@ -7,9 +7,13 @@ export default function LoginPage() {
   const [email, setEmail] = useState('')
 
   async function signIn() {
-    await supabase.auth.signInWithOtp({ email })
-    alert('Check your email for a login link.')
-  }
+  await supabase.auth.signInWithOtp({
+    email,
+    options: {
+      emailRedirectTo: `${location.origin}/auth/callback`,
+      shouldCreateUser: true
+    }
+  })
 
   return (
     <div style={{ maxWidth: 400, margin: '80px auto' }}>
